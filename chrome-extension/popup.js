@@ -78,6 +78,70 @@
     return ext.runtime.getURL(`assets/${model.id}/${style}/${model.id}_${emotion}.png`);
   }
 
+  function getDirectory(parent, name) {
+    return new Promise((resolve, reject) => {
+      parent.getDirectory(name, {}, resolve, reject);
+    });
+  }
+
+  function readEntries(directory) {
+    return new Promise((resolve, reject) => {
+      const reader = directory.createReader();
+      const entries = [];
+
+      function readBatch() {
+        reader.readEntries((batch) => {
+          if (!batch.length) {
+            resolve(entries);
+            return;
+          }
+
+          entries.push(...batch);
+          readBatch();
+        }, reject);
+      }
+
+      readBatch();
+    });
+  }
+
+  async function discoverStyles() {
+    if (!ext.runtime.getPackageDirectoryEntry) return;
+
+    const packageDirectory = await ext.runtime.getPackageDirectoryEntry();
+    const assetsDirectory = await getDirectory(packageDirectory, "assets");
+
+    await Promise.all(
+      MODELS.map(async (model) => {
+        const modelDirectory = await getDirectory(assetsDirectory, model.id);
+        const entries = await readEntries(modelDirectory);
+        const expectedSprites = new Set(
+          model.emotions.map((emotion) => `${model.id}_${emotion}.png`),
+        );
+        const validStyles = [];
+
+        for (const entry of entries) {
+          if (!entry.isDirectory) continue;
+
+          const styleDirectory = await getDirectory(modelDirectory, entry.name);
+          const files = await readEntries(styleDirectory);
+          const spriteNames = new Set(
+            files.filter((file) => file.isFile).map((file) => file.name),
+          );
+          if ([...expectedSprites].every((name) => spriteNames.has(name))) {
+            validStyles.push(entry.name);
+          }
+        }
+
+        model.styles = validStyles.sort((left, right) => {
+          if (left === DEFAULT_STYLE) return -1;
+          if (right === DEFAULT_STYLE) return 1;
+          return left.localeCompare(right);
+        });
+      }),
+    );
+  }
+
   function defaultPreferences() {
     return Object.fromEntries(
       MODELS.map((model) => [model.id, { enabled: true, style: DEFAULT_STYLE }]),
@@ -270,5 +334,8 @@
     shell.append(header, grid);
   }
 
-  loadPreferences().then(renderHome);
+  discoverStyles()
+    .catch((error) => console.warn("Could not discover sprite themes.", error))
+    .then(loadPreferences)
+    .then(renderHome);
 })();

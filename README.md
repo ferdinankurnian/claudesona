@@ -6,6 +6,21 @@ When a supported model writes a tag like `<claude_happy />`, `<gpt_focus />`, or
 
 The initial Claudesona fan art was by [thebes](https://github.com/vgel), derived from the Anthropic logo. The emotion-sprite derivatives are courtesy of GPT-Images-2. This project is unofficial and is not affiliated with Anthropic, OpenAI, or Google.
 
+## Preview
+
+<table>
+  <tr>
+    <td align="center"><strong>Choose a model</strong></td>
+    <td align="center"><strong>Pick a theme</strong></td>
+    <td align="center"><strong>Preview its sprites</strong></td>
+  </tr>
+  <tr>
+    <td><img src="chrome-extension/assets/screenshots/1.png" alt="Claudesona model picker popup" width="300"></td>
+    <td><img src="chrome-extension/assets/screenshots/2.png" alt="Claudesona theme picker popup" width="300"></td>
+    <td><img src="chrome-extension/assets/screenshots/3.png" alt="Claudesona sprite theme preview popup" width="300"></td>
+  </tr>
+</table>
+
 ## Install from GitHub
 
 1. Download this repository with **Code -> Download ZIP**, then unzip it.
@@ -19,7 +34,7 @@ Important: choose the inner `chrome-extension` folder, not the whole repository 
 
 You can also download a prebuilt ZIP from `dist/`, unzip it, and load the unzipped folder with **Load unpacked**.
 
-Latest ZIP: [`dist/sona-emotion-sprites-latest.zip`](dist/sona-emotion-sprites-latest.zip), currently the same build as [`dist/sona-emotion-sprites-1.2.1.zip`](dist/sona-emotion-sprites-1.2.1.zip).
+Latest ZIP: [`dist/sona-emotion-sprites-latest.zip`](dist/sona-emotion-sprites-latest.zip), currently the same build as [`dist/sona-emotion-sprites-1.2.2.zip`](dist/sona-emotion-sprites-1.2.2.zip).
 
 Older Claude-only builds such as `claudesona-emotion-sprites-1.0.1.zip` are kept for reference; use the `sona-emotion-sprites-*` ZIP for Claude + GPT + Gemini support.
 
@@ -39,14 +54,16 @@ The bundled sprites are the initial `default` theme. The directory layout is:
 $ tree -d chrome-extension/assets
 chrome-extension/assets
 ├── claude
+│   ├── claudefem
 │   └── default
 ├── gemini
 │   └── default
 └── gpt
-    └── default
+    ├── default
+    └── gptfem
 ```
 
-Each theme directory contains the full sprite set for its model, such as `claude/default/claude_happy.png`. To add another theme, create a sibling directory such as `claude/pixel-art/` and register its name in that model's `styles` list in `chrome-extension/popup.js`.
+Each theme directory contains the full sprite set for its model, such as `claude/default/claude_happy.png`. To add another theme, create a sibling directory such as `claude/pixel-art/` with the same sprite filenames, then reload the unpacked extension. The Chromium popup discovers complete theme folders automatically. Browsers without package-directory scanning support fall back to the bundled `default` theme.
 
 ## Supported Tags
 

@@ -4,7 +4,7 @@ Unofficial local Chrome extension for `claude.ai`, `chatgpt.com`, and `gemini.go
 
 When a supported model site renders one of these literal tags in normal page text, the extension replaces it with the matching 128x128 transparent PNG on its own line.
 
-Click the toolbar icon to open the theme picker. Each model can be enabled or disabled independently, and each model can use its own sprite theme. The bundled sprites live under `assets/<model>/default/`.
+Click the toolbar icon to open the theme picker. Each model can be enabled or disabled independently, and each model can use its own sprite theme. The bundled sprites live under `assets/<model>/<theme>/`. Chromium-based browsers discover complete theme directories automatically when the popup opens.
 
 Tags are host-specific:
 
