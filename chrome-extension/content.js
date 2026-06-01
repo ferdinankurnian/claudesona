@@ -68,6 +68,8 @@
   const ACTIVE_SITE = SITE_CONFIGS.find((site) => window.location.hostname === site.host);
   if (!ACTIVE_SITE) return;
 
+  const STORAGE_KEY = "sonaPreferences";
+  const DEFAULT_STYLE = "style-1";
   const EMOTIONS = new Set(
     ACTIVE_SITE.emotions.map((emotion) => `${ACTIVE_SITE.prefix}_${emotion}`),
   );
@@ -95,6 +97,7 @@
   let observer = null;
   let pendingScanFrame = null;
   let pendingScanTimer = null;
+  let settings = { enabled: true, style: DEFAULT_STYLE };
 
   function shouldSkipNode(node) {
     const parent = node.parentElement;
@@ -103,11 +106,11 @@
 
   function emotionImage(name) {
     const wrap = document.createElement("span");
-    wrap.className = "sona-emotion-sprite-wrap claude-emotion-sprite-wrap";
+    wrap.className = "sona-emotion-sprite-wrap";
     wrap.dataset.sonaEmotion = name;
 
     const img = document.createElement("img");
-    img.className = "sona-emotion-sprite claude-emotion-sprite";
+    img.className = "sona-emotion-sprite";
     img.alt = `${ACTIVE_SITE.label} ${name
       .replace(`${ACTIVE_SITE.prefix}_`, "")
       .replaceAll("_", " ")}`;
@@ -116,10 +119,36 @@
     img.height = 128;
     img.decoding = "async";
     img.loading = "lazy";
-    img.src = ext.runtime.getURL(`assets/${name}.png`);
+    img.src = spriteUrl(name);
 
     wrap.appendChild(img);
     return wrap;
+  }
+
+  function spriteUrl(name) {
+    return ext.runtime.getURL(`assets/${ACTIVE_SITE.prefix}/${settings.style}/${name}.png`);
+  }
+
+  function restoreSprites() {
+    document.querySelectorAll(".sona-emotion-sprite-wrap[data-sona-emotion]").forEach((wrap) => {
+      wrap.replaceWith(document.createTextNode(`<${wrap.dataset.sonaEmotion} />`));
+    });
+  }
+
+  function refreshRenderedSprites() {
+    document.querySelectorAll(".sona-emotion-sprite-wrap[data-sona-emotion]").forEach((wrap) => {
+      const image = wrap.querySelector(".sona-emotion-sprite");
+      if (image) image.src = spriteUrl(wrap.dataset.sonaEmotion);
+    });
+  }
+
+  async function loadSettings() {
+    const stored = await ext.storage.local.get(STORAGE_KEY);
+    const activeSettings = stored[STORAGE_KEY]?.[ACTIVE_SITE.prefix];
+    settings = {
+      enabled: activeSettings?.enabled !== false,
+      style: activeSettings?.style || DEFAULT_STYLE,
+    };
   }
 
   function replaceTextNode(node) {
@@ -223,7 +252,7 @@
   }
 
   function scan(root) {
-    if (!root) return;
+    if (!root || !settings.enabled) return;
 
     if (root.nodeType === Node.TEXT_NODE) {
       replaceTextNode(root);
@@ -266,7 +295,7 @@
   }
 
   function scheduleFullScan() {
-    if (pendingScanFrame !== null) return;
+    if (!settings.enabled || pendingScanFrame !== null) return;
 
     pendingScanFrame = requestAnimationFrame(() => {
       pendingScanFrame = null;
@@ -280,7 +309,8 @@
     }, 250);
   }
 
-  function start() {
+  async function start() {
+    await loadSettings();
     scan(document.body);
 
     observer = new MutationObserver((mutations) => {
@@ -300,6 +330,22 @@
     });
 
     observe();
+    ext.storage.onChanged.addListener(async (changes, areaName) => {
+      if (areaName !== "local" || !changes[STORAGE_KEY]) return;
+
+      const previousSettings = settings;
+      await loadSettings();
+
+      if (!settings.enabled) {
+        restoreSprites();
+        return;
+      }
+
+      if (previousSettings.style !== settings.style) {
+        refreshRenderedSprites();
+      }
+      scan(document.body);
+    });
   }
 
   if (document.readyState === "loading") {

@@ -1,4 +1,4 @@
-.claude-emotion-sprite {
+.sona-emotion-sprite {
   display: block;
   width: 128px;
   height: 128px;
@@ -7,7 +7,7 @@
   object-fit: contain;
 }
 
-.claude-emotion-sprite-wrap {
+.sona-emotion-sprite-wrap {
   display: flex;
   align-items: center;
   justify-content: flex-start;
