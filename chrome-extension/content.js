@@ -69,7 +69,7 @@
   if (!ACTIVE_SITE) return;
 
   const STORAGE_KEY = "sonaPreferences";
-  const DEFAULT_STYLE = "style-1";
+  const DEFAULT_STYLE = "default";
   const EMOTIONS = new Set(
     ACTIVE_SITE.emotions.map((emotion) => `${ACTIVE_SITE.prefix}_${emotion}`),
   );
@@ -147,7 +147,7 @@
     const activeSettings = stored[STORAGE_KEY]?.[ACTIVE_SITE.prefix];
     settings = {
       enabled: activeSettings?.enabled !== false,
-      style: activeSettings?.style || DEFAULT_STYLE,
+      style: activeSettings?.style === "style-1" ? DEFAULT_STYLE : activeSettings?.style || DEFAULT_STYLE,
     };
   }
 

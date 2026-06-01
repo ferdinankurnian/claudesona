@@ -20,8 +20,8 @@
 }
 
 body {
-  width: 410px;
-  min-height: 520px;
+  width: 390px;
+  min-height: 440px;
   margin: 0;
   overflow-x: hidden;
   color: var(--ink);
@@ -37,18 +37,13 @@ button {
 }
 
 .view {
-  min-height: 520px;
-  padding: 18px;
+  min-height: 440px;
+  padding: 16px;
   animation: view-in 180ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
 .shell {
-  min-height: 484px;
-  padding: 18px;
-  border: 2px solid var(--line);
-  border-radius: 14px;
-  background: rgba(16, 17, 18, 0.78);
-  box-shadow: var(--shadow);
+  min-height: 408px;
 }
 
 .brand,
@@ -306,6 +301,33 @@ h2 {
   line-height: 1.25;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.toast {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  left: 14px;
+  z-index: 2;
+  padding: 11px 13px;
+  border: 1px solid rgba(233, 169, 106, 0.42);
+  border-radius: 10px;
+  opacity: 0;
+  background: rgba(51, 39, 30, 0.96);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.36);
+  color: #ffd3a8;
+  font-size: 12px;
+  line-height: 1.45;
+  text-wrap: pretty;
+  transform: translateY(8px);
+  transition-property: opacity, transform;
+  transition-duration: 180ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 @keyframes view-in {

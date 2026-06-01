@@ -3,7 +3,7 @@
 
   const ext = typeof browser !== "undefined" ? browser : chrome;
   const STORAGE_KEY = "sonaPreferences";
-  const DEFAULT_STYLE = "style-1";
+  const DEFAULT_STYLE = "default";
   const MODELS = [
     {
       id: "gpt",
@@ -84,19 +84,43 @@
     );
   }
 
+  function normalizeStyle(model, style) {
+    return model.styles.includes(style) ? style : DEFAULT_STYLE;
+  }
+
   async function loadPreferences() {
     const stored = await ext.storage.local.get(STORAGE_KEY);
     const defaults = defaultPreferences();
     preferences = Object.fromEntries(
       MODELS.map((model) => [
         model.id,
-        { ...defaults[model.id], ...stored[STORAGE_KEY]?.[model.id] },
+        {
+          ...defaults[model.id],
+          ...stored[STORAGE_KEY]?.[model.id],
+          style: normalizeStyle(model, stored[STORAGE_KEY]?.[model.id]?.style),
+        },
       ]),
     );
   }
 
   async function savePreferences() {
     await ext.storage.local.set({ [STORAGE_KEY]: preferences });
+  }
+
+  function showToast(message) {
+    document.querySelector(".toast")?.remove();
+
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.setAttribute("role", "status");
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add("visible"));
+    setTimeout(() => {
+      toast.classList.remove("visible");
+      setTimeout(() => toast.remove(), 180);
+    }, 3600);
   }
 
   function createBackButton(label, onClick) {
@@ -181,6 +205,9 @@
       };
       await savePreferences();
       renderStyles(model.id);
+      showToast(
+        `${model.label} sprites ${preferences[model.id].enabled ? "enabled" : "disabled"}. Open chats update instantly; refresh once if needed.`,
+      );
     });
     header.append(title, toggle);
 
@@ -224,6 +251,7 @@
       preferences[model.id] = { ...preferences[model.id], style };
       await savePreferences();
       renderStyles(model.id);
+      showToast(`${model.label} now uses ${style}. Open chats update instantly; refresh once if needed.`);
     });
     header.append(title, useButton);
 
